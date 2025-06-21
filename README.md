@@ -40,7 +40,7 @@ Try it out here: [🔗 Live Demo](https://your-demo-url.com)
 
 To run locally:
 
-```bash
-git clone https://github.com/Saurabhp12/Moranda-AI/tree/main
+```bashhttps:
+git clone https://github.com/Saurabhp12/Moranda-AI.git
 cd Moranda AI 
 open index.html
