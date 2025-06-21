@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moranda AI - Advanced Voice & Text Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a0ca3;
+            --secondary: #7209b7;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --text-light: #e2e8f0;
+            --text-gray: #94a3b8;
+            --success: #06d6a0;
+            --warning: #ffd166;
+            --danger: #ef476f;
+            --border-radius: 16px;
+            --transition: all 0.3s ease;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0c1a32, #1e3a8a);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 40px;
+            background: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid rgba(100, 130, 240, 0.2);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-icon {
+            font-size: 32px;
+            color: var(--primary);
+        }
+        
+        .logo-text {
+            font-size: 26px;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            background: rgba(6, 214, 160, 0.15);
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+        
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        .main-container {
+            display: flex;
+            flex: 1;
+            padding: 30px;
+            gap: 25px;
+            max-width: 1800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(30, 41, 59, 0.75);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(100, 130, 240, 0.2);
+            box-shadow: 0 10px 40px rgba(0, 5, 20, 0.4);
+            height: calc(100vh - 160px);
+        }
+        
+        .chat-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid rgba(100, 130, 240, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(30, 41, 59, 0.65);
+        }
+        
+        .bot-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: white;
+            flex-shrink: 0;
+        }
+        
+        .bot-info {
+            flex: 1;
+        }
+        
+        .bot-info h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        
+        .bot-info p {
+            font-size: 14px;
+            color: var(--text-gray);
+        }
+        
+        .voice-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .voice-mode-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .voice-mode-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.4);
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+        
+        .message {
+            max-width: 85%;
+            padding: 22px 26px;
+            border-radius: 20px;
+            line-height: 1.7;
+            position: relative;
+            animation: fadeIn 0.4s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-bottom-right-radius: 5px;
+            color: white;
+        }
+        
+        .bot-message {
+            align-self: flex-start;
+            background: rgba(30, 41, 59, 0.9);
+            border-bottom-left-radius: 5px;
+            border: 1px solid rgba(100, 130, 240, 0.3);
+        }
+        
+        .message-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 15px;
+            transition: var(--transition);
+        }
+        
+        .message:hover .message-actions {
+            opacity: 1;
+        }
+        
+        .message-action {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-gray);
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .message-action:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--text-light);
+        }
+        
+        .message-typing {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary);
+            margin-right: 6px;
+            opacity: 0.7;
+        }
+        
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            padding: 18px 24px;
+            background: rgba(30, 41, 59, 0.9);
+            border-radius: 18px;
+            width: fit-content;
+            margin-top: 10px;
+            border: 1px solid rgba(100, 130, 240, 0.3);
+            gap: 10px;
+            font-size: 15px;
+        }
+        
+        .typing-indicator span {
+            animation: typingPulse 1.2s infinite;
+            display: inline-block;
+        }
+        
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typingPulse {
+            0%, 100% { transform: translateY(0); opacity: 0.6; }
+            50% { transform: translateY(-5px); opacity: 1; }
+        }
+        
+        .voice-input-container {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background: rgba(30, 41, 59, 0.65);
+            border-top: 1px solid rgba(100, 130, 240, 0.2);
+        }
+        
+        .voice-status {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+        
+        .voice-pulse {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: rgba(67, 97, 238, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .voice-pulse-inner {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            z-index: 2;
+        }
+        
+        .voice-pulse-effect {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(67, 97, 238, 0.2);
+            animation: pulse 2s infinite;
+            opacity: 0;
+            z-index: 1;
+        }
+        
+        .voice-pulse.listening .voice-pulse-effect {
+            opacity: 1;
+        }
+        
+        .voice-transcript {
+            width: 100%;
+            background: rgba(20, 30, 50, 0.8);
+            border-radius: 18px;
+            padding: 20px;
+            text-align: center;
+            min-height: 60px;
+            font-size: 18px;
+            border: 1px solid rgba(100, 130, 240, 0.4);
+        }
+        
+        .voice-hints {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        
+        .voice-hint {
+            background: rgba(67, 97, 238, 0.15);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .chat-input-container {
+            padding: 20px;
+            border-top: 1px solid rgba(100, 130, 240, 0.2);
+            background: rgba(30, 41, 59, 0.65);
+            position: relative;
+        }
+        
+        .file-upload-preview {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .uploaded-file {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(67, 97, 238, 0.15);
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        
+        .remove-file {
+            color: var(--danger);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        
+        .remove-file:hover {
+            transform: scale(1.1);
+        }
+        
+        .chat-input-area {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+        
+        .input-container {
+            flex: 1;
+            position: relative;
+        }
+        
+        .chat-input {
+            width: 100%;
+            background: rgba(20, 30, 50, 0.8);
+            border: 1px solid rgba(100, 130, 240, 0.4);
+            border-radius: 18px;
+            padding: 20px 80px 20px 25px;
+            color: var(--text-light);
+            font-size: 16px;
+            resize: none;
+            min-height: 65px;
+            max-height: 200px;
+            outline: none;
+            transition: var(--transition);
+        }
+        
+        .chat-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.3);
+        }
+        
+        .input-icons {
+            position: absolute;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 20px;
+        }
+        
+        .input-icon {
+            color: var(--text-gray);
+            cursor: pointer;
+            font-size: 22px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        
+        .input-icon:hover {
+            color: var(--text-light);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .input-icon.active {
+            color: var(--primary);
+            background: rgba(67, 97, 238, 0.2);
+        }
+        
+        .send-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            flex-shrink: 0;
+            align-self: flex-end;
+            box-shadow: 0 5px 20px rgba(67, 97, 238, 0.4);
+        }
+        
+        .send-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(67, 97, 238, 0.6);
+        }
+        
+        .features {
+            width: 320px;
+            background: rgba(30, 41, 59, 0.75);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(100, 130, 240, 0.2);
+            height: calc(100vh - 160px);
+            overflow-y: auto;
+        }
+        
+        .features-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: var(--text-light);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .feature {
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 18px;
+            background: rgba(30, 41, 59, 0.5);
+            transition: var(--transition);
+            cursor: pointer;
+            align-items: flex-start;
+        }
+        
+        .feature:hover {
+            background: rgba(67, 97, 238, 0.15);
+            transform: translateX(5px);
+        }
+        
+        .feature-icon {
+            font-size: 24px;
+            color: var(--primary);
+            margin-top: 3px;
+            flex-shrink: 0;
+        }
+        
+        .feature-text h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: var(--text-light);
+        }
+        
+        .feature-text p {
+            font-size: 15px;
+            color: var(--text-gray);
+            line-height: 1.6;
+        }
+        
+        .uploaded-image {
+            max-width: 300px;
+            border-radius: 12px;
+            margin-top: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .analysis-result {
+            background: rgba(30, 41, 59, 0.7);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+            border-left: 4px solid var(--success);
+        }
+        
+        .analysis-title {
+            font-weight: 600;
+            color: var(--success);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 14px;
+            color: var(--text-gray);
+            border-top: 1px solid rgba(100, 130, 240, 0.1);
+            background: rgba(15, 23, 42, 0.7);
+        }
+        
+        @media (max-width: 1200px) {
+            .features {
+                width: 250px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .features {
+                display: none;
+            }
+            
+            .main-container {
+                padding: 20px 15px;
+            }
+            
+            .chat-messages {
+                padding: 20px 15px;
+            }
+            
+            .message {
+                max-width: 90%;
+                padding: 18px 22px;
+            }
+            
+            .chat-input-container, .voice-input-container {
+                padding: 15px;
+            }
+            
+            .chat-input {
+                padding: 16px 70px 16px 20px;
+            }
+        }
+        
+        .voice-settings {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .voice-setting {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: 120px;
+        }
+        
+        .voice-label {
+            font-size: 14px;
+            color: var(--text-gray);
+        }
+        
+        .voice-select {
+            background: rgba(20, 30, 50, 0.8);
+            color: var(--text-light);
+            border: 1px solid rgba(100, 130, 240, 0.4);
+            border-radius: 8px;
+            padding: 8px 12px;
+            width: 100%;
+        }
+        
+        .active-feature {
+            background: rgba(67, 97, 238, 0.25);
+            transform: translateX(5px);
+            border: 1px solid rgba(100, 130, 240, 0.5);
+        }
+        
+        .voice-mode-active {
+            background: var(--secondary);
+        }
+        
+        .mic-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 12px;
+            height: 12px;
+            background: var(--danger);
+            border-radius: 50%;
+            opacity: 0;
+            transition: var(--transition);
+        }
+        
+        .listening .mic-indicator {
+            opacity: 1;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .command-example {
+            display: flex;
+            flex-direction: column;
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 10px;
+            border-left: 3px solid var(--warning);
+        }
+        
+        .command-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            color: var(--warning);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            <div class="logo-icon"><i class="fas fa-brain"></i></div>
+            <div class="logo-text">Moranda AI</div>
+        </div>
+        <div class="status">
+            <div class="status-indicator"></div>
+            <span>Voice & Text Active - v3.5.0</span>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="bot-avatar">M</div>
+                <div class="bot-info">
+                    <h2>Moranda AI Assistant</h2>
+                    <p>Voice & Text Integration • Real-time Processing • Self-Learning</p>
+                </div>
+                <div class="voice-controls">
+                    <button class="voice-mode-btn" id="voice-mode-btn">
+                        <i class="fas fa-microphone"></i> Voice Assistant Mode
+                    </button>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chat-messages">
+                <div class="message bot-message">
+                    <strong>Hello! I'm Moranda, your AI assistant.</strong> 
+                    <br><br>
+                    I'm now fully integrated with both voice and text capabilities:
+                    <ul style="margin: 10px 0 10px 20px;">
+                        <li>Natural voice conversations with "Hey Moranda"</li>
+                        <li>Seamless switching between text and voice</li>
+                        <li>Real-time web search and information retrieval</li>
+                        <li>Self-learning capabilities</li>
+                    </ul>
+                    Try saying "Hey Moranda" or type your question below!
+                    <div class="message-actions">
+                        <button class="message-action"><i class="fas fa-copy"></i></button>
+                        <button class="message-action"><i class="fas fa-volume-up"></i></button>
+                        <button class="message-action"><i class="fas fa-thumbs-up"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Voice Input Interface -->
+            <div class="voice-input-container" id="voice-input-container" style="display: none;">
+                <div class="voice-settings">
+                    <div class="voice-setting">
+                        <div class="voice-label">Voice</div>
+                        <select class="voice-select" id="voice-select">
+                            <option value="Aoede">Aoede (Female)</option>
+                            <option value="Orion">Orion (Male)</option>
+                            <option value="Echo">Echo (Neutral)</option>
+                        </select>
+                    </div>
+                    <div class="voice-setting">
+                        <div class="voice-label">Response Style</div>
+                        <select class="voice-select" id="response-style">
+                            <option value="fast">Fast</option>
+                            <option value="normal" selected>Normal</option>
+                            <option value="thoughtful">Thoughtful</option>
+                        </select>
+                    </div>
+                    <div class="voice-setting">
+                        <div class="voice-label">Speed</div>
+                        <select class="voice-select" id="voice-speed">
+                            <option value="0.8">Slow</option>
+                            <option value="1.0" selected>Normal</option>
+                            <option value="1.2">Fast</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="voice-status">
+                    <div class="voice-pulse" id="voice-pulse">
+                        <div class="voice-pulse-inner">
+                            <i class="fas fa-microphone"></i>
+                        </div>
+                        <div class="voice-pulse-effect"></div>
+                        <div class="mic-indicator"></div>
+                    </div>
+                    
+                    <div class="voice-transcript" id="voice-transcript">
+                        Click microphone to start listening...
+                    </div>
+                    
+                    <div class="voice-hints">
+                        <div class="voice-hint">"Hey Moranda, what's the news today?"</div>
+                        <div class="voice-hint">"Set a timer for 10 minutes"</div>
+                        <div class="voice-hint">"Search for AI advancements"</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Text Input Interface -->
+            <div class="chat-input-container" id="chat-input-container">
+                <div class="file-upload-preview" id="file-preview" style="display: none;">
+                    <!-- Uploaded files will appear here -->
+                </div>
+                
+                <div class="chat-input-area">
+                    <div class="input-container">
+                        <textarea class="chat-input" id="chat-input" placeholder="Type your message or say 'Hey Moranda'..."></textarea>
+                        <div class="input-icons">
+                            <div class="input-icon" id="file-upload-btn">
+                                <i class="fas fa-paperclip"></i>
+                            </div>
+                            <div class="input-icon" id="voice-toggle-btn">
+                                <i class="fas fa-microphone"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="send-btn" id="send-btn">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="features">
+            <div class="features-title">
+                <i class="fas fa-stars"></i> Integrated Capabilities
+            </div>
+            
+            <div class="feature active-feature" id="feature-voice">
+                <div class="feature-icon">
+                    <i class="fas fa-microphone-alt"></i>
+                </div>
+                <div class="feature-text">
+                    <h3>Voice & Text Integration</h3>
+                    <p>Seamless switching between voice commands and text input with context retention.</p>
+                </div>
+            </div>
+            
+            <div class="feature" id="feature-multimodal">
+                <div class="feature-icon">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <div class="feature-text">
+                    <h3>Real-time Web Search</h3>
+                    <p>Access and analyze information from across the internet in real-time.</p>
+                    <div class="command-example">
+                        <div class="command-title">
+                            <i class="fas fa-terminal"></i>
+                            <span>Try:</span>
+                        </div>
+                        <p>"Search for latest AI research papers"</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="feature" id="feature-learning">
+                <div class="feature-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="feature-text">
+                    <h3>Self-Learning System</h3>
+                    <p>Moranda improves with each interaction, remembering preferences and context.</p>
+                    <div class="command-example">
+                        <div class="command-title">
+                            <i class="fas fa-terminal"></i>
+                            <span>Try:</span>
+                        </div>
+                        <p>"Remember I prefer Celsius for temperature"</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="feature" id="feature-integration">
+                <div class="feature-icon">
+                    <i class="fas fa-plug"></i>
+                </div>
+                <div class="feature-text">
+                    <h3>API Integration</h3>
+                    <p>Connect to calendars, smart home devices, and productivity tools.</p>
+                    <div class="command-example">
+                        <div class="command-title">
+                            <i class="fas fa-terminal"></i>
+                            <span>Try:</span>
+                        </div>
+                        <p>"Add meeting with John at 3pm tomorrow"</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="feature" id="feature-security">
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="feature-text">
+                    <h3>Privacy Focused</h3>
+                    <p>End-to-end encryption with local processing options for sensitive data.</p>
+                </div>
+            </div>
+            
+            <div class="feature" id="feature-analytics">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="feature-text">
+                    <h3>Advanced Analytics</h3>
+                    <p>Data analysis and visualization capabilities for complex queries.</p>
+                    <div class="command-example">
+                        <div class="command-title">
+                            <i class="fas fa-terminal"></i>
+                            <span>Try:</span>
+                        </div>
+                        <p>"Analyze sales data from last quarter"</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>Moranda AI v3.5.0 • Integrated Voice & Text Assistant • All conversations are encrypted</p>
+        <p>© 2025 Moranda AI Systems. All rights reserved.</p>
+    </div>
+    
+    <script>
+        // DOM Elements
+        const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+        const voiceModeBtn = document.getElementById('voice-mode-btn');
+        const voiceInputContainer = document.getElementById('voice-input-container');
+        const chatInputContainer = document.getElementById('chat-input-container');
+        const voicePulse = document.getElementById('voice-pulse');
+        const voiceTranscript = document.getElementById('voice-transcript');
+        const voiceToggleBtn = document.getElementById('voice-toggle-btn');
+        const fileUploadBtn = document.getElementById('file-upload-btn');
+        const filePreview = document.getElementById('file-preview');
+        const fileInput = document.createElement('input');
+        
+        // Initialize file input
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*, .pdf, .doc, .docx, .txt';
+        fileInput.multiple = true;
+        fileInput.style.display = 'none';
+        document.body.appendChild(fileInput);
+        
+        // State variables
+        let isVoiceModeActive = false;
+        let isListening = false;
+        let uploadedFiles = [];
+        let activeFeature = 'feature-voice';
+        
+        // Toggle voice mode
+        voiceModeBtn.addEventListener('click', () => {
+            isVoiceModeActive = !isVoiceModeActive;
+            if (isVoiceModeActive) {
+                chatInputContainer.style.display = 'none';
+                voiceInputContainer.style.display = 'flex';
+                voiceModeBtn.innerHTML = '<i class="fas fa-keyboard"></i> Text Mode';
+                voiceModeBtn.classList.add('voice-mode-active');
+                setActiveFeature('feature-voice');
+            } else {
+                chatInputContainer.style.display = 'block';
+                voiceInputContainer.style.display = 'none';
+                voiceModeBtn.innerHTML = '<i class="fas fa-microphone"></i> Voice Assistant Mode';
+                voiceModeBtn.classList.remove('voice-mode-active');
+                stopVoiceListening();
+            }
+        });
+        
+        // Toggle voice listening from text mode
+        voiceToggleBtn.addEventListener('click', () => {
+            if (isVoiceModeActive) return;
+            
+            isListening = !isListening;
+            if (isListening) {
+                startVoiceListening();
+                voiceToggleBtn.classList.add('active');
+            } else {
+                stopVoiceListening();
+                voiceToggleBtn.classList.remove('active');
+            }
+        });
+        
+        // Simulate voice listening
+        function startVoiceListening() {
+            voicePulse.classList.add('listening');
+            voiceTranscript.textContent = "Listening... say 'Hey Moranda' to activate";
+            
+            // Simulate the wake word detection
+            setTimeout(() => {
+                voiceTranscript.textContent = "Hey Moranda detected! How can I help?";
+                
+                // After a pause, simulate user speech
+                setTimeout(() => {
+                    simulateUserVoiceInput("What's the latest news about AI advancements?");
+                }, 1500);
+            }, 1000);
+        }
+        
+        function stopVoiceListening() {
+            voicePulse.classList.remove('listening');
+            if (!isVoiceModeActive) {
+                voiceTranscript.textContent = "Click microphone to start listening...";
+            }
+        }
+        
+        // Voice pulse interaction
+        voicePulse.addEventListener('click', () => {
+            if (isVoiceModeActive) {
+                isListening = !isListening;
+                if (isListening) {
+                    startVoiceListening();
+                } else {
+                    stopVoiceListening();
+                }
+            }
+        });
+        
+        // Simulate user voice input
+        function simulateUserVoiceInput(message) {
+            // Update transcript
+            voiceTranscript.textContent = message;
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Process after delay
+            setTimeout(() => {
+                processUserMessage(message);
+                if (isVoiceModeActive) {
+                    voiceTranscript.textContent = "Listening...";
+                }
+            }, 2000);
+        }
+        
+        // File upload handling
+        fileUploadBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                filePreview.style.display = 'flex';
+                uploadedFiles = Array.from(e.target.files);
+                
+                // Clear previous previews
+                filePreview.innerHTML = '';
+                
+                // Add new previews
+                uploadedFiles.forEach(file => {
+                    const fileElement = document.createElement('div');
+                    fileElement.className = 'uploaded-file';
+                    
+                    let icon = 'file';
+                    if (file.type.startsWith('image/')) icon = 'file-image';
+                    else if (file.type.includes('pdf')) icon = 'file-pdf';
+                    else if (file.type.includes('word')) icon = 'file-word';
+                    
+                    fileElement.innerHTML = `
+                        <i class="fas fa-${icon}"></i>
+                        <span>${file.name}</span>
+                        <div class="remove-file"><i class="fas fa-times"></i></div>
+                    `;
+                    
+                    // Add remove functionality
+                    const removeBtn = fileElement.querySelector('.remove-file');
+                    removeBtn.addEventListener('click', () => {
+                        fileElement.remove();
+                        uploadedFiles = uploadedFiles.filter(f => f !== file);
+                        if (uploadedFiles.length === 0) {
+                            filePreview.style.display = 'none';
+                        }
+                    });
+                    
+                    filePreview.appendChild(fileElement);
+                });
+                
+                // If image is uploaded, simulate image analysis
+                if (uploadedFiles.some(file => file.type.startsWith('image/'))) {
+                    showTypingIndicator();
+                    setTimeout(() => {
+                        simulateImageAnalysis();
+                        setActiveFeature('feature-multimodal');
+                    }, 2500);
+                }
+            }
+        });
+        
+        // Simulate image analysis
+        function simulateImageAnalysis() {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', 'bot-message');
+            messageDiv.innerHTML = `
+                <div class="analysis-result">
+                    <div class="analysis-title">
+                        <i class="fas fa-image"></i> Image Analysis Complete
+                    </div>
+                    <p>I've analyzed the uploaded image and identified:</p>
+                    <ul style="margin: 10px 0 10px 20px;">
+                        <li>A modern city skyline at sunset</li>
+                        <li>Distinctive architecture including skyscrapers</li>
+                        <li>Reflection in a body of water (likely a river)</li>
+                        <li>Possible location: Chicago, USA</li>
+                    </ul>
+                    <p>Would you like me to find more information about this location?</p>
+                </div>
+                <div class="message-actions">
+                    <button class="message-action"><i class="fas fa-copy"></i></button>
+                    <button class="message-action"><i class="fas fa-volume-up"></i></button>
+                    <button class="message-action"><i class="fas fa-thumbs-up"></i></button>
+                </div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Text message sending
+        sendBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        function sendMessage() {
+            const message = chatInput.value.trim();
+            if (message) {
+                addMessageToChat(message, 'user');
+                chatInput.value = '';
+                showTypingIndicator();
+                
+                setTimeout(() => {
+                    processUserMessage(message);
+                }, 1500);
+            }
+        }
+        
+        // Process user message and generate response
+        function processUserMessage(message) {
+            let response;
+            
+            if (message.toLowerCase().includes('weather')) {
+                response = `The current weather in your location is 72°F (22°C) with clear skies. The forecast shows sunny conditions throughout the week with a high of 78°F (26°C) on Friday. Would you like me to provide more detailed weather information?`;
+                setActiveFeature('feature-integration');
+            } 
+            else if (message.toLowerCase().includes('news') || message.toLowerCase().includes('update')) {
+                response = `Here are the top news headlines today:
+                <br><br>
+                1. Breakthrough in quantum computing announced by researchers at MIT
+                <br>
+                2. Global tech summit addresses AI ethics and regulation
+                <br>
+                3. Renewable energy investments reach record high in 2025
+                <br><br>
+                Would you like me to provide more details on any of these stories?`;
+                setActiveFeature('feature-analytics');
+            }
+            else if (message.toLowerCase().includes('ai') || message.toLowerCase().includes('advancement')) {
+                response = `The latest advancements in AI include:
+                <br><br>
+                • Multimodal models that can process text, images, and audio simultaneously
+                <br>
+                • Self-improving algorithms that require less human supervision
+                <br>
+                • Energy-efficient AI models that reduce computational requirements by 40%
+                <br><br>
+                I can provide research papers or news articles on any of these topics.`;
+                setActiveFeature('feature-learning');
+            }
+            else if (message.toLowerCase().includes('image') && uploadedFiles.length > 0) {
+                simulateImageAnalysis();
+                return;
+            }
+            else if (message.toLowerCase().includes('moranda') || message.toLowerCase().includes('who are you')) {
+                response = `I'm Moranda, an advanced AI assistant with integrated voice and text capabilities. I can help with research, analysis, scheduling, and more. My self-learning algorithms allow me to improve with each interaction. How can I assist you today?`;
+                setActiveFeature('feature-voice');
+            }
+            else {
+                response = `I've processed your request: "${message}". As an advanced AI assistant, I can connect to web resources to provide comprehensive information. Would you like me to search the web for more details?`;
+                setActiveFeature('feature-web');
+            }
+            
+            addMessageToChat(response, 'bot');
+        }
+        
+        // Add message to chat
+        function addMessageToChat(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message');
+            messageDiv.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
+            messageDiv.innerHTML = `
+                ${text}
+                <div class="message-actions">
+                    <button class="message-action"><i class="fas fa-copy"></i></button>
+                    <button class="message-action"><i class="fas fa-volume-up"></i></button>
+                    <button class="message-action"><i class="fas fa-thumbs-up"></i></button>
+                </div>
+            `;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Show typing indicator
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.classList.add('typing-indicator');
+            typingDiv.innerHTML = `
+                <span></span>
+                <span></span>
+                <span></span>
+                Moranda is thinking...
+            `;
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Remove after delay
+            setTimeout(() => {
+                typingDiv.remove();
+            }, 2000);
+        }
+        
+        // Set active feature in the sidebar
+        function setActiveFeature(featureId) {
+            // Remove active class from current feature
+            document.getElementById(activeFeature).classList.remove('active-feature');
+            
+            // Add active class to new feature
+            document.getElementById(featureId).classList.add('active-feature');
+            activeFeature = featureId;
+        }
+        
+        // Initialize with an example conversation
+        setTimeout(() => {
+            addMessageToChat("Hi Moranda! What's the latest on renewable energy investments?", 'user');
+            showTypingIndicator();
+            setTimeout(() => {
+                processUserMessage("What's the latest on renewable energy investments?");
+            }, 2000);
+        }, 3000);
+        
+        // Simulate voice command after initial load
+        setTimeout(() => {
+            if (!isVoiceModeActive) {
+                isListening = true;
+                voiceToggleBtn.classList.add('active');
+                startVoiceListening();
+            }
+        }, 8000);
+    </script>
+</body>
+</html>
